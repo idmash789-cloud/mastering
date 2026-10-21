@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mastering Audio — Mastering & Mix Backsound di Browser</title>
+<meta name="description" content="Aplikasi mastering audio lokal di browser: rapikan suara utama, campur backsound, lalu export. File Anda tidak diunggah ke mana pun.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <div class="logo">MA</div>
+    <div>
+      <h1>Mastering Audio</h1>
+      <p>Mastering &amp; mix backsound — 100% diproses lokal di browser Anda</p>
+    </div>
+  </div>
+  <div class="ab-switch" role="group" aria-label="Bandingkan asli dan master">
+    <button id="btnAsli" type="button">Asli</button>
+    <button id="btnMaster" type="button" class="active">Master</button>
+  </div>
+</header>
+
+<main class="layout">
+  <!-- ============ TRACK UTAMA ============ -->
+  <section class="card">
+    <h2>1 · Track Utama (Suara / Narasi)</h2>
+    <label class="dropzone" id="dropMain">
+      <input type="file" id="fileMain" accept="audio/*,.mp3,.wav,.m4a,.ogg" hidden>
+      <span class="dz-title">Klik atau jatuhkan file audio utama</span>
+      <span class="dz-sub">MP3 · WAV · M4A · OGG</span>
+    </label>
+    <div class="file-info" id="infoMain">Belum ada file audio</div>
+    <canvas id="waveMain" width="900" height="110" aria-label="Waveform audio utama"></canvas>
+    <div class="transport">
+      <button id="btnPlay" type="button" class="primary" disabled>▶ Putar</button>
+      <button id="btnStop" type="button" disabled>■ Berhenti</button>
+      <span class="time"><span id="timePos">0:00</span> / <span id="timeDur">0:00</span></span>
+      <label class="chk"><input type="checkbox" id="chkNormalize" checked> Normalisasi level</label>
+    </div>
+    <div class="level-info" id="levelInfo">Peak sebelum: – · Sesudah (perkiraan): –</div>
+  </section>
+
+  <!-- ============ MASTERING ============ -->
+  <section class="card">
+    <h2>2 · Mastering</h2>
+    <div class="preset-row">
+      <label for="selPreset">Preset</label>
+      <select id="selPreset"></select>
+      <button id="btnSavePreset" type="button">Simpan Preset Saya</button>
+      <button id="btnDeletePreset" type="button">Hapus Preset Saya</button>
+    </div>
+    <div class="sliders">
+      <div class="slider-row">
+        <label for="slBass">Bass</label>
+        <input type="range" id="slBass" min="-15" max="15" step="0.5" value="0">
+        <output id="outBass">0 dB</output>
+      </div>
+      <div class="slider-row">
+        <label for="slMid">Middle</label>
+        <input type="range" id="slMid" min="-15" max="15" step="0.5" value="0">
+        <output id="outMid">0 dB</output>
+      </div>
+      <div class="slider-row">
+        <label for="slTreble">Treble</label>
+        <input type="range" id="slTreble" min="-15" max="15" step="0.5" value="0">
+        <output id="outTreble">0 dB</output>
+      </div>
+      <div class="slider-row">
+        <label for="slEcho">Echo</label>
+        <input type="range" id="slEcho" min="0" max="100" step="1" value="0">
+        <output id="outEcho">0</output>
+      </div>
+      <div class="slider-row">
+        <label for="slNoise">Noise</label>
+        <input type="range" id="slNoise" min="0" max="100" step="1" value="0">
+        <output id="outNoise">0</output>
+      </div>
+      <div class="slider-row">
+        <label for="slWidth">Lebar</label>
+        <input type="range" id="slWidth" min="0" max="200" step="1" value="100">
+        <output id="outWidth">100</output>
+      </div>
+      <div class="slider-row">
+        <label for="slMasterVol">Volume Master</label>
+        <input type="range" id="slMasterVol" min="0" max="100" step="1" value="100">
+        <output id="outMasterVol">100%</output>
+      </div>
+    </div>
+    <p class="hint">Urutan proses: Noise (high-pass + gate) → EQ 3-band → Compressor → Echo → Lebar Stereo → Limiter + Normalisasi. Rantai ini hanya berlaku untuk track utama.</p>
+  </section>
+
+  <!-- ============ BACKSOUND ============ -->
+  <section class="card">
+    <h2>3 · Track Backsound (Musik Latar)</h2>
+    <label class="dropzone small" id="dropBack">
+      <input type="file" id="fileBack" accept="audio/*,.mp3,.wav,.m4a,.ogg" hidden>
+      <span class="dz-title">Klik atau jatuhkan file backsound</span>
+      <span class="dz-sub">Opsional — hanya kena volume, fade &amp; loop (tanpa EQ)</span>
+    </label>
+    <div class="file-info" id="infoBack">Belum ada backsound</div>
+    <div class="sliders">
+      <div class="slider-row">
+        <label for="slBackVol">Volume Backsound</label>
+        <input type="range" id="slBackVol" min="0" max="100" step="1" value="25">
+        <output id="outBackVol">25%</output>
+      </div>
+      <div class="slider-row">
+        <label for="slFadeIn">Fade In (detik)</label>
+        <input type="range" id="slFadeIn" min="0" max="15" step="0.5" value="2">
+        <output id="outFadeIn">2 dtk</output>
+      </div>
+      <div class="slider-row">
+        <label for="slFadeOut">Fade Out (detik)</label>
+        <input type="range" id="slFadeOut" min="0" max="15" step="0.5" value="5">
+        <output id="outFadeOut">5 dtk</output>
+      </div>
+    </div>
+    <div class="transport">
+      <label class="chk"><input type="checkbox" id="chkLoop" checked> Loop backsound (mengulang bila lebih pendek)</label>
+      <label class="chk"><input type="checkbox" id="chkMuteMain"> Mute utama</label>
+      <label class="chk"><input type="checkbox" id="chkMuteBack"> Mute backsound</label>
+    </div>
+  </section>
+
+  <!-- ============ EXPORT ============ -->
+  <section class="card">
+    <h2>4 · Export</h2>
+    <div class="export-grid">
+      <label>Isi export
+        <select id="selExportMode">
+          <option value="mix">Mix (Master + Backsound)</option>
+          <option value="master">Mastering Saja (tanpa backsound)</option>
+        </select>
+      </label>
+      <label>Format
+        <select id="selFormat">
+          <option value="mp3">MP3</option>
+          <option value="wav">WAV</option>
+        </select>
+      </label>
+      <label>Bitrate MP3
+        <select id="selBitrate">
+          <option value="128">128 kbps</option>
+          <option value="192" selected>192 kbps</option>
+          <option value="320">320 kbps</option>
+        </select>
+      </label>
+    </div>
+    <div class="transport">
+      <button id="btnExport" type="button" class="primary" disabled>Render &amp; Siapkan Unduhan</button>
+      <a id="linkDownload" class="download hidden" href="#" download>⬇ Unduh Hasil</a>
+    </div>
+    <div class="progress-wrap"><div id="progressBar"></div></div>
+    <div class="file-info" id="exportStatus">Pilih audio utama dulu, lalu render.</div>
+    <p class="hint" id="mp3Note"></p>
+  </section>
+
+  <footer class="foot">
+    <p>Semua pemrosesan terjadi lokal di perangkat Anda — tidak ada file yang diunggah ke server. Cocok untuk merapikan narasi &amp; dongeng pengantar tidur: coba preset <strong>HypnoKids Lembut</strong>.</p>
+  </footer>
+</main>
+
+<script src="vendor/lame.all.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
