@@ -151,7 +151,7 @@ if (typeof document !== 'undefined') (function () {
     var delay = ctx.createDelay(1); delay.delayTime.value = 0.19;
     var fb = ctx.createGain(); fb.gain.value = 0.32;
     var echoIn = ctx.createGain(); echoIn.gain.value = (p.echo / 100) * 0.6;
-    comp.connect(delay); delay.connect(fb); fb.connect(delay);
+    delay.connect(fb); fb.connect(delay);
     comp.connect(echoIn); echoIn.connect(delay); delay.connect(bus);
     comp.connect(bus);
     // Lebar stereo (mid-side)
@@ -265,10 +265,15 @@ if (typeof document !== 'undefined') (function () {
       return state.ctx.decodeAudioData(ab);
     }).then(function (buf) { cb(null, buf); }).catch(function (e) { cb(e); });
   }
+  function gagalText(prefix, file, err) {
+    var mb = file && file.size ? (file.size / 1048576).toFixed(1) : '?';
+    var saran = 'Penyebab umum: format tidak didukung browser (paling aman MP3 atau WAV), atau file terlalu besar/panjang untuk memori browser — coba perkecil (di bawah ±50 MB) atau potong durasinya.';
+    return prefix + ' "' + (file ? file.name : '') + '" (' + mb + ' MB). ' + saran + (err && err.message ? ' [' + err.message + ']' : '');
+  }
   function loadMain(file) {
     if (!file) return;
     decodeFile(file, function (err, buf) {
-      if (err) { els.infoMain.textContent = 'Gagal membaca file: ' + err.message; return; }
+      if (err) { els.infoMain.textContent = gagalText('Gagal membaca file', file, err); return; }
       stopPlayback(); state.offset = 0;
       state.mainBuffer = buf; state.mainName = file.name.replace(/\.[^.]+$/, '');
       var chans = []; for (var c = 0; c < buf.numberOfChannels; c++) chans.push(buf.getChannelData(c));
@@ -283,7 +288,7 @@ if (typeof document !== 'undefined') (function () {
   function loadBack(file) {
     if (!file) return;
     decodeFile(file, function (err, buf) {
-      if (err) { els.infoBack.textContent = 'Gagal membaca backsound: ' + err.message; return; }
+      if (err) { els.infoBack.textContent = gagalText('Gagal membaca backsound', file, err); return; }
       state.backBuffer = buf; state.backName = file.name;
       els.infoBack.textContent = file.name + ' · ' + fmtTime(buf.duration) + ' · ' + buf.numberOfChannels + ' kanal';
     });
